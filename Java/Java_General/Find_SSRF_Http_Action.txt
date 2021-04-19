@@ -1,0 +1,22 @@
+CxList objectCreation = Find_ObjectCreations();
+CxList methods = Find_Methods();
+
+CxList httpAction = All.NewCxList();
+
+// org.apache.hc.client5.http
+// The String parameter of these methods are influenced on by user input is vulnerable to SSRF
+List <String> objectCreateWithURLAsParam = new List<String> {
+		"HttpDelete", "HttpGet", "HttpHead", "HttpOptions", 
+		"HttpPatch", "HttpPost", "HttpPut", "HttpTrace"
+		};
+
+httpAction.Add(objectCreation.FindByShortNames(objectCreateWithURLAsParam));
+
+httpAction.Add(methods.FindByMemberAccesses(new string[]{
+	"HttpDelete.setUri", "HttpGet.setUri", "HttpHead.setUri", "HttpOptions.setUri",
+	"HttpPatch.setUri", "HttpPost.setUri", "HttpPut.setUri", "HttpTrace.setUri",
+	"Request.Delete", "Request.Get", "Request.Head", "Request.Options", 
+	"Request.Patch", "Request.Post", "Request.Put", "Request.Builder.url"
+	}, false));
+		
+result = httpAction;

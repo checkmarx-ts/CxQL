@@ -1,0 +1,20 @@
+
+result = base.Find_Remote_Requests();
+
+CxList springRestTemplateFirstParam = All.GetParameters(All.FindByMemberAccesses(new string[] {
+	// org.springframework.web.client.RestTemplate
+	"RestTemplate.getFor*",
+	"RestTemplate.postFor*",
+	"RestTemplate.delete",
+	"RestTemplate.exchange",
+	"RestTemplate.put",
+	"RestTemplate.patchFor*",
+	// javax.ws.rs.client.Client.target
+	"Client.target",
+	// org.apache.cxf.jaxrs.client.WebClient.create
+	"WebClient.create",	
+	}), 0);
+
+result -= Find_XSRF_Requests();
+
+result.Add(springRestTemplateFirstParam);

@@ -1,0 +1,40 @@
+// SSRF
+
+CxList inputs = Find_Interactive_Inputs();
+CxList declarators = Find_Declarators();
+CxList paramss = base.Find_ParamDecl();
+
+
+CxList declParams = declarators;
+declParams.Add(paramss);
+
+CxList stringDeclaratorsAndParams = declParams.FindByType("String");
+CxList unkRefs = Find_UnknownReference();
+CxList unkRefsAndDeclAndParams = unkRefs;
+unkRefsAndDeclAndParams.Add(declarators);
+unkRefsAndDeclAndParams.Add(paramss);
+
+CxList stringDeclaratorsReferences = unkRefsAndDeclAndParams.FindAllReferences(stringDeclaratorsAndParams);
+inputs = inputs.InfluencingOn(stringDeclaratorsReferences);
+
+
+CxList executeMethods = Find_SSRF_Execute();
+CxList requests = Find_Remote_Requests();
+requests -= executeMethods;
+
+CxList sanitizers = Find_Remote_Requests_Sanitize();
+CxList urlQueryString = Find_URL_Query_String_Creating_URI();
+sanitizers.Add(urlQueryString);
+	
+result = requests.InfluencedByAndNotSanitized(inputs, sanitizers);
+
+// If the user input is influencing on the URL that requested from server side, make this input as a valid usr input for SSRF.
+// The URL contains a protocol, server name, port number, and server path, but it does not include query string parameters.
+// URL query string comes after the "?": string concatenation with "?".   
+// remove string variable that is query string. 
+// input -> httpAction -> execute
+CxList httpAction = Find_SSRF_Http_Action();
+inputs = inputs.InfluencingOn(httpAction);
+result.Add(executeMethods.InfluencedByAndNotSanitized(inputs, sanitizers));
+
+result = result.ReduceFlowByPragma();

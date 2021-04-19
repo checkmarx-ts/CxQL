@@ -1,0 +1,10 @@
+
+result.Add(All.FindByMemberAccesses(new string[] {
+	// apache 
+	"HttpClient.execute*",
+	//org.apache.http.client.fluent.Request;
+	"Request.execute",
+	// OkHttpClient 
+	"Call.execute",
+	"newCall.execute",
+	}));

@@ -1,4 +1,37 @@
 class Sample {
+	
+	// Positive
+	public void test_creat_URI() {
+		String url = request.getParameter("url");
+		CloseableHttpClient client = HttpClients.createDefault();
+		URI uri = new URI(url);
+		HttpResponse httpResponse = client.execute(new HttpGet(uri));
+	}
+	
+	// Negative
+	public void test_creat_URI_1() {
+		String query = request.getParameter("query");
+		CloseableHttpClient client = HttpClients.createDefault();
+		URI uri = new URI("http://", "user_info", "test.com", 443, "/dosomething", query, "#1");
+		HttpResponse httpResponse = client.execute(new HttpGet(uri));
+	}
+	
+	// Negative
+	public void test_creat_URI_2() {
+		String query = request.getParameter("query");
+		CloseableHttpClient client = HttpClients.createDefault();
+		
+		URI u = new URI("http://java.sun.com/j2se/1.3");
+		
+		URI uri = new URI(u.getScheme(),
+			u.getAuthority(),
+			u.getPath(), query,
+			u.getFragment());
+		
+		HttpResponse httpResponse = client.execute(new HttpGet(uri));
+	}
+	
+	
 	// Negative
 	public void validateUserInfo(String ticket) {
 		String gotoUrl = request.getParameter("url");

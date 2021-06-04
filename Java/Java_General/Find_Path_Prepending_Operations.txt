@@ -1,0 +1,38 @@
+
+result = base.Find_Path_Prepending_Operations();
+
+CxList unknownRefs = Find_UnknownReference();
+
+// Find the '+=' operators
+
+CxList assignments = Find_AssignExpr();
+
+CxList assignAdd = All.NewCxList();
+
+foreach(CxList assignment in assignments)
+
+{
+
+	try
+
+	{
+
+		AssignExpr graph = assignment.TryGetCSharpGraph<AssignExpr>();
+
+		if(graph != null && graph.Operator == AssignOperator.AdditionAssign)
+
+			assignAdd.Add(assignment);	
+
+	}
+
+	catch(Exception ex)
+
+	{
+
+		cxLog.WriteDebugMessage(ex);
+
+	}
+
+}
+
+result.Add(unknownRefs.GetByAncs(assignAdd));

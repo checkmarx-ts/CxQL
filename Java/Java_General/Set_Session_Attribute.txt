@@ -1,5 +1,4 @@
 result = base.Set_Session_Attribute();
  
+// KeycloakSession is not HttpSession
 result -= All.FindByMemberAccess("KeycloakSession.setAttribute", false);
- 
-result -= All.FindByMemberAccess("KeycloakSession.putValue", false);

@@ -1,0 +1,34 @@
+result = base.Find_DB_Sanitize();
+
+CxList sanitizedParameter = All.NewCxList();
+
+// general queries
+CxList strings = Find_Strings();
+CxList decalarators = Find_Declarators();
+CxList methods = Find_Methods();
+
+// possible sql string with place holder ?
+// case 1: var: = "SELECT c_giturl FROM ABC WHERE c_department=? AND c_center=? and c_team=?" 
+// case 2: var: = "SELECT c_giturl FROM ABC" + "WHERE c_department=? AND c_center=? and c_team=?" 
+// case 3: sink(ctx, "SELECT c_giturl FROM ABC WHERE c_department=? AND c_center=? and c_team=?")
+// case 4: sink( "SELECT c_giturl FROM ABC WHERE c_department=? AND c_center=? and c_team=?")
+CxList strWithQuestionMark = strings.FindByShortName("*?*");
+CxList sqlStr = strings.FindByShortNames(
+ new List<string> {"*SELECT*", "*INSERT*", "*UPDATE*", "*DELETE*"}, false);
+
+CxList sqlStrWithPlaceHolder = strWithQuestionMark * sqlStr;
+
+foreach (CxList sqlString in sqlStrWithPlaceHolder) {
+    int numberOfPlaceHolder = sqlString.GetName().Split('?').Length - 1;
+    CxList sqlStrWithPlaceHolderRefs = All.FindAllReferences(sqlString.GetAssignee());
+    sqlString.Add(sqlStrWithPlaceHolderRefs);
+    int numberOfIndexInMethod = sqlString.GetFathers().FindByType(typeof(Param)).GetIndexOfParameter();
+    CxList sqlQueryMethods = methods.FindByParameters(sqlString);
+    
+    for (int i = 1; i <= numberOfPlaceHolder; i++) {
+        CxList paramOfAsSanitizer = All.GetParameters(sqlQueryMethods, numberOfIndexInMethod + i);
+        sanitizedParameter.Add(paramOfAsSanitizer);
+    }
+}
+
+result.Add(sanitizedParameter);

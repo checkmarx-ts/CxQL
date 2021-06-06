@@ -10,3 +10,4 @@ Customized queries repo.
 5. Java_Low_Visibility/Incorrect_Permission_Assignment_For_Critical_Resources
 6. Java_Low_Visibility/Use_Of_Hardcoded_Password
 7. Java_Low_Visibility/Stored_Log_Forging -> Find_Hibernate_DB_In
+8. Go_High_Risk/SQL_Injection -> Find_DB_Sanitize

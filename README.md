@@ -8,3 +8,4 @@ Customized queries repo.
 3. Java_Medium_Threat/Privacy_Violation
 4. Java_Medium_Threat/Absolute_Path_Traversal -> Find_Path_Prepending_Operations
 5. Java_Low_Visibility/Incorrect_Permission_Assignment_For_Critical_Resources
+6. Java_Low_Visibility/Use_Of_Hardcoded_Password

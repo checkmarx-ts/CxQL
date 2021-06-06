@@ -1,0 +1,2 @@
+result = base.Incorrect_Permission_Assignment_For_Critical_Resources();
+result -= All.GetByAncs(All.FindByCustomAttribute("HandlerChain"));

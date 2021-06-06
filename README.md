@@ -9,3 +9,4 @@ Customized queries repo.
 4. Java_Medium_Threat/Absolute_Path_Traversal -> Find_Path_Prepending_Operations
 5. Java_Low_Visibility/Incorrect_Permission_Assignment_For_Critical_Resources
 6. Java_Low_Visibility/Use_Of_Hardcoded_Password
+7. Java_Low_Visibility/Stored_Log_Forging -> Find_Hibernate_DB_In

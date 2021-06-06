@@ -1,2 +1,4 @@
 result = base.Incorrect_Permission_Assignment_For_Critical_Resources();
+
+// the file key word in the SOAP handler HandlerChain is not used to create a file
 result -= All.GetByAncs(All.FindByCustomAttribute("HandlerChain"));

@@ -1,0 +1,62 @@
+// Finds any upload which the size was not validated before storage
+CxList conditions = Find_Conditions();
+CxList methods = Find_Methods();
+CxList variables = Find_UnknownReference();
+variables.Add(Find_Declarators());
+
+// upload abstraction Objects
+CxList relevants = All.FindAllReferences(variables.FindByTypes(new string[]{
+	"UploadItem", "CommonsMultipartFile", "MultipartFile", 
+	"MockMultipartFile", "FileItem", "DiskFileItem",
+	"FileItem", "DefaultFileItem", "CommonsMultipartResolver",
+	"MultipartRequest", "Part", 
+	"HttpServletRequest", "HttpServletRequestWrapper", 
+	"ServletRequest", "ServletRequestWrapper" }));
+
+CxList relevantMethods = relevants.GetMembersOfTarget();
+
+// upload tests
+CxList validators = relevantMethods.FindByShortNames(new List<string>{
+		"getSize", "getFileSize", "getName", 
+		"getContentType", "getSubmittedFileName", "getOriginalFilename",
+		// Modified on 6/7/2021
+		"getContentLength"
+		});
+
+// Modified on 6/7/2021
+CxList ifStmts = validators.GetByAncs(conditions).GetAncOfType(typeof(IfStmt));
+CxList goodMethodDecls = ifStmts.GetAncOfType(typeof(MethodDecl));
+
+// MultipartConfig annotation
+CxList multiPartConfigAnnotation = All.FindByCustomAttribute("MultipartConfig");
+
+CxList maxSetting = All.GetByAncs(multiPartConfigAnnotation).FindByShortName("max*");
+
+if (maxSetting.Count > 0) {
+	goodMethodDecls.Add(multiPartConfigAnnotation.GetAncOfType(typeof(ClassDecl)));
+}
+
+// multipart-config max-request-size in web.xml
+CxList maxSettingInWebXML = All.FindByName("*SERVLET.MULTIPART_CONFIG.MAX*");
+
+if (maxSettingInWebXML.Count > 0) {
+	goodMethodDecls.Add(relevants.GetAncOfType(typeof(MethodDecl)));
+}
+
+
+CxList validatedMethods = relevantMethods.GetByAncs(goodMethodDecls);
+
+relevantMethods -= validatedMethods;
+
+// Content access
+CxList dataAccess = relevantMethods.FindByShortNames(new List<string>{
+		// move
+		"transferTo", "write",
+		// content
+		"getData", "get", "getFile", "getInputStream", "getBytes",
+		"getOutputStream", "getFileData", });
+
+result = All.FindDefinition(dataAccess.GetTargetOfMembers())
+	.DataInfluencingOn(dataAccess);
+
+result.Add(Find_Spring_File_Upload());

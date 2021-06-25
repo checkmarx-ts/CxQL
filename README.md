@@ -12,3 +12,4 @@ Customized queries repo.
 7. Java_Low_Visibility/Stored_Log_Forging -> Find_Hibernate_DB_In
 8. Go_High_Risk/SQL_Injection -> Find_DB_Sanitize
 9. Java_Low_Visibility/Unrestricted_File_Upload
+10. CPP_High_Risk/Process_Control

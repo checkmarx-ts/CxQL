@@ -1,0 +1,3 @@
+result = base.Credit_privacy_violation_exclude();
+
+result.Add(All.FindByShortName("credit_support*", false));

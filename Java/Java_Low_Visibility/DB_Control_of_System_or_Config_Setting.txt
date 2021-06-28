@@ -1,0 +1,17 @@
+CxList setters = Find_Setters();
+
+CxList sanitize = Find_General_Sanitize();
+
+CxList inputs = Find_DB_Out();
+
+inputs.Add(Find_Read_NonDB());
+
+CxList notInput = All.NewCxList();
+
+notInput.Add(All.FindByMemberAccess("System.getenv"));
+
+notInput.Add(All.FindByMemberAccess("Properties.getProperty"));
+
+inputs -= notInput;
+
+result = inputs.InfluencingOnAndNotSanitized(setters, sanitize);

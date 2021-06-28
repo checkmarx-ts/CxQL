@@ -13,3 +13,4 @@ Customized queries repo.
 8. Go_High_Risk/SQL_Injection -> Find_DB_Sanitize
 9. Java_Low_Visibility/Unrestricted_File_Upload
 10. CPP_High_Risk/Process_Control
+11. Java_Low_Visibility/Potential_ReDoS

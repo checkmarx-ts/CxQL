@@ -1,0 +1,9 @@
+result = base.Potential_ReDoS();
+
+CxList customAttributes = Find_CustomAttribute();
+
+CxList strings = Find_Strings();
+
+// string in annotation eg @Pointcut(execution(* com.emc.nrp.penalty.ext.controller.*.*(..)) || )
+// these strings 'execution' are not regular expressions.
+result -= strings.FindByShortName("*execution*", false).GetByAncs(customAttributes);

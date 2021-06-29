@@ -20,9 +20,9 @@ leftSide -= pathsGet.GetAssignee();
 CxList allFiles = leftSide + PathFiles.DataInfluencedBy(leftSide);
 
 //Find all Writers
-CxList writersDecl = All.FindByTypes(new string [] {"FileSystems", "FileWriter", "FileOutputStream", "PrintWriter", "Writer"}, true);
-allFiles.Add(writersDecl.FindByType(typeof(UnknownReference)));
-allFiles.Add(writersDecl.FindByType(typeof(Declarator)));
+// CxList writersDecl = All.FindByTypes(new string [] {"FileSystems", "FileWriter", "FileOutputStream", "PrintWriter", "Writer"}, true);
+// allFiles.Add(writersDecl.FindByType(typeof(UnknownReference)));
+// allFiles.Add(writersDecl.FindByType(typeof(Declarator)));
 
 CxList param_ = Find_Params();
 CxList metods = Find_Methods();

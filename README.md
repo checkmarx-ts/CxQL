@@ -16,3 +16,4 @@ Customized queries repo.
 11. Java_Low_Visibility/Potential_ReDoS
 12. Java_Low_Visibility/Serializable_Class_Containing_Sensitive_Data -> Java_General/Credit_privacy_violation_exclude
 13. Java_Low_Visibility/DB_Control_of_System_or_Config_Setting
+14. Java_Low_Visibility/Log_Forging -> Java_General/Find_Splitting_Sanitizer

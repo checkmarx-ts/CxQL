@@ -19,6 +19,15 @@ leftSide -= assignedNull;
 leftSide -= pathsGet.GetAssignee();
 CxList allFiles = leftSide + PathFiles.DataInfluencedBy(leftSide);
 
+// remove all File array decalaration
+CxList arrays = All.FindByType(typeof(RankSpecifier));
+
+CxList arrayDecls = arrays.GetAncOfType(typeof(Declarator));
+
+CxList arrayRefs = All.FindAllReferences(arrayDecls);
+
+allFiles -= arrayRefs;
+
 //Find all Writers
 // CxList writersDecl = All.FindByTypes(new string [] {"FileSystems", "FileWriter", "FileOutputStream", "PrintWriter", "Writer"}, true);
 // allFiles.Add(writersDecl.FindByType(typeof(UnknownReference)));

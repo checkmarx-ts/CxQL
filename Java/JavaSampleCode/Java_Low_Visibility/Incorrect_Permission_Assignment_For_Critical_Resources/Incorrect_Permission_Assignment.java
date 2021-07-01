@@ -52,7 +52,7 @@ public class Incorrect_Permission_Assignment {
 		}
 	}
 
-    private void moveREXFCFile(BRFFileUploadConversionData brfFileUpload) {
+	private void moveREXFCFile(BRFFileUploadConversionData brfFileUpload) {
 		logger.info(Constant.START + " moveREXFCFile");
 		String fileName = brfFileUpload.getFileName();
 		BufferedWriter moveFileWriter = null;
@@ -99,15 +99,15 @@ public class Incorrect_Permission_Assignment {
 		}
 
 		logger.info(Constant.END + " moveREXFCFile");
-    }
+	}
 
 	@Override
 	public Map<String, Object> downloadAttachments(AttachmentPayload payload) {
 		String username = payload.getUsername();
-		List<NemMeucAttachmentsDTO> attachments = getAttachments (payload);
+		List<NemMeucAttachmentsDTO> attachments = getAttachments(payload);
 		Map<String, Object> response = new HashMap<String, Object>();
-		if (attachments.size() =z @) {
-			throw new MEUCException("No attachment available”);
+		if (attachments.size() == 0) {
+			throw new MEUCException("No attachment available");
 		}
 
 		String zipPath = null;
@@ -116,7 +116,7 @@ public class Incorrect_Permission_Assignment {
 		FileInputStream fis = null;
 		log.info("START > MEUF_A downloadListener");
 		List<String> files = new ArrayList<String>();
-		String downloadPath = environment.getProperty("UPLOAD_PATH") ;
+		String downloadPath = environment.getProperty("UPLOAD_PATH");
 		for (NemMeucAttachmentsDTO row : attachments) {
 			String filepath = downloadPath + row.getFile_name();
 			files.add(filepath);
@@ -127,16 +127,17 @@ public class Incorrect_Permission_Assignment {
 		}
 
 		try {
-			zipPath = FilenameUtils.normalize(environment.getProperty("ZIPFILES PATH") + username + System.currentTimeMillis() + ".zip");
+			zipPath = FilenameUtils.normalize(
+					environment.getProperty("ZIPFILES PATH") + username + System.currentTimeMillis() + ".zip");
 			File filed = new File(Paths.get(zipPath).toUri());
-			filed.setReadable(true) ;
-			filed.setWritable(true) ;
+			filed.setReadable(true);
+			filed.setWritable(true);
 			fos = new FileOutputStream(filed);
 			zipOut = new ZipOutputStream(new BufferedOutputStream(fos));
 			for (String filePath : files) {
 				File input = new File(FilenameUtils.normalize(filePath));
-				input.setWritable(true) ;
-				input.setReadable(true) ;
+				input.setWritable(true);
+				input.setReadable(true);
 				fis = new FileInputStream(input);
 				ZipEntry ze = new ZipEntry(input.getName());
 				log.info("Zipping the file: " + input.getName());
@@ -144,9 +145,9 @@ public class Incorrect_Permission_Assignment {
 				byte[] tmp = new byte[4 * 1024];
 				int size = 0;
 				while ((size = fis.read(tmp)) != -1) {
-				zipOut.write(tmp, 0, size);
+					zipOut.write(tmp, 0, size);
 				}
-				zipOut. flush();
+				zipOut.flush();
 				fis.close();
 				log.info("file zipped =" + filePath);
 			}
@@ -162,6 +163,19 @@ public class Incorrect_Permission_Assignment {
 		}
 	}
 
+	public void som() {
 
+		File[] files = new File[] { pdfFile, csvFile };
+		files[0].setReadable(true);
+		files[0].setWritable(true);
+		files[1].setReadable(true);
+		files[1].setWritable(true);
+
+		List<File> al = new ArrayList<>();
+
+		al.add(pdfFile);
+		al.add(csvFile);
+
+	}
 
 }

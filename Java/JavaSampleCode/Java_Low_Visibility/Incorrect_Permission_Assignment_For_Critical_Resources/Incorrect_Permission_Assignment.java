@@ -166,10 +166,6 @@ public class Incorrect_Permission_Assignment {
 	public void som() {
 
 		File[] files = new File[] { pdfFile, csvFile };
-		files[0].setReadable(true);
-		files[0].setWritable(true);
-		files[1].setReadable(true);
-		files[1].setWritable(true);
 
 		for (File file : files) {
 			String fileName = file.getName();

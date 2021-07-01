@@ -1,5 +1,4 @@
-
-result = base.Find_Path_Prepending_Operations();
+result = base.Find_Path_Traversal_Sanitize();
 
 CxList unknownRefs = Find_UnknownReference();
 

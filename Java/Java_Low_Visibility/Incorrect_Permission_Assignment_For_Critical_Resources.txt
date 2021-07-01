@@ -17,7 +17,7 @@ CxList assignedNull = nullLiterals.GetFathers() * leftSide;
 assignedNull.Add(leftSide.FindByFathers(nullLiterals.GetFathers()));
 leftSide -= assignedNull;
 leftSide -= pathsGet.GetAssignee();
-CxList allFiles = leftSide + PathFiles.DataInfluencedBy(leftSide);
+CxList allFiles = leftSide + PathFiles.FindAllReferences(leftSide);
 
 // remove all File array decalaration
 CxList arrays = All.FindByType(typeof(RankSpecifier));

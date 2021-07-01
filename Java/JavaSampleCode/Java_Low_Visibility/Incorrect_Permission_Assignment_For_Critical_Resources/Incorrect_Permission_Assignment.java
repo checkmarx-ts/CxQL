@@ -171,6 +171,10 @@ public class Incorrect_Permission_Assignment {
 		files[1].setReadable(true);
 		files[1].setWritable(true);
 
+		for (File file : files) {
+			String fileName = file.getName();
+		}
+
 		List<File> al = new ArrayList<>();
 
 		al.add(pdfFile);

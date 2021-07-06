@@ -18,6 +18,8 @@ List<string> lineSeparatorsList = new List<string> {
 		@"*%0d*"};
 replaceEnter = replaceEnter.FindByRegex(@"'\\[rn]'");
 replace = replace.FindByParameters(replaceEnter);
+CxList targetOfReplace = All.FindDefinition(replace.GetLeftmostTarget());
+replace.Add(targetOfReplace);
 
 // Also all places that leave only the substring before the "indexOf" \r or \n are relevant sanitizers
 CxList substring = methods.FindByMemberAccess("*.substring");

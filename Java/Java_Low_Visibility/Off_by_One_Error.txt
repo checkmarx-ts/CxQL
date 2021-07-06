@@ -1,0 +1,46 @@
+result = base.Off_by_One_Error();
+
+// int i = 1;
+
+// while (i <= eventTypeList.size()) {
+
+//	expectedEvent = eventTypeList.get(i - 1);
+// }
+
+// remove false positive like above sample code
+foreach(CxList res in result) {
+	
+	CxList getMethodInovacations = res.GetMembersOfTarget().FindByType(typeof(MethodInvokeExpr)).FindByShortName("get");
+	CxList subtracts = base.Find_BinaryExpr().GetByBinaryOperator(BinaryOperator.Subtract);
+	CxList subtractsUsed = subtracts.GetByAncs(getMethodInovacations);
+	
+	try {
+
+		BinaryExpr binaryExpr = subtractsUsed.TryGetCSharpGraph<BinaryExpr>();
+
+		if (binaryExpr != null && binaryExpr.Right != null && binaryExpr.Left != null) {
+
+			CSharpGraph right = binaryExpr.Right;
+			int rightNum = -1;
+			CxList cxRight = All.FindById(right.NodeId);
+			int.TryParse(right.Text, out rightNum);
+
+			Expression left = binaryExpr.Left;
+			CxList cxLeft = All.FindById(left.NodeId);
+			CxList cxLeftDecl = All.FindDefinition(cxLeft);
+			CxList cxLeftInitialization = All.FindInitialization(cxLeftDecl);
+			int initializedValue = -2;
+			int.TryParse(cxLeftInitialization.GetName(), out initializedValue);
+			
+			if (rightNum == initializedValue) {
+				result -= res;
+			}
+		}
+
+	}
+
+	catch(Exception ex) {
+		cxLog.WriteDebugMessage(ex);
+	}
+
+}

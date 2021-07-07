@@ -23,3 +23,4 @@ Customized queries repo.
 18. Java_Low_Visibility/Unsynchronized_Access_To_Shared_Data
 19. Kotlin_Android/Use_of_WebView_AddJavascriptInterface
 20. Common_General/Find_Constants
+21. Java_Android/Insecure_WebView_Usage

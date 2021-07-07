@@ -19,3 +19,4 @@ Customized queries repo.
 14. Java_Low_Visibility/Log_Forging -> Java_General/Find_Splitting_Sanitizer
 15. Java_Android/Side_Channel_Data_Leakage
 16. Java_Low_Visibility/Off_by_One_Error
+17. Java_Low_Visibility/Improper_Resource_Access_Authorization

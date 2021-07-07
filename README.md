@@ -22,3 +22,4 @@ Customized queries repo.
 17. Java_Low_Visibility/Improper_Resource_Access_Authorization
 18. Java_Low_Visibility/Unsynchronized_Access_To_Shared_Data
 19. Kotlin_Android/Use_of_WebView_AddJavascriptInterface
+20. Common_General/Find_Constants

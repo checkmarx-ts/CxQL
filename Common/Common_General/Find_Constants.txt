@@ -1,0 +1,3 @@
+result = base.Find_Constants();
+
+result.Add(Find_FieldDecls().FindByFieldAttributes(Modifiers.Final));

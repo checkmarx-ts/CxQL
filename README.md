@@ -20,3 +20,4 @@ Customized queries repo.
 15. Java_Android/Side_Channel_Data_Leakage
 16. Java_Low_Visibility/Off_by_One_Error
 17. Java_Low_Visibility/Improper_Resource_Access_Authorization
+18. Java_Low_Visibility/Unsynchronized_Access_To_Shared_Data

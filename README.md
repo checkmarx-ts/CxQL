@@ -24,3 +24,4 @@ Customized queries repo.
 19. Kotlin_Android/Use_of_WebView_AddJavascriptInterface
 20. Common_General/Find_Constants
 21. Java_Android/Insecure_WebView_Usage
+22. Java_Heuristic/Heuristic_Parameter_Tampering -> Find_DB_Heuristic

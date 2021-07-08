@@ -8,7 +8,7 @@ string pattern = @"targetSdkVersion\s+([0-9]+)";
 
 CxList targets = All.FindByRegexExt(pattern, "build.gradle", false);
 
-targets = targets.FindByFileName(cxEnv.Path.Combine("*", "app", "build.gradle"));
+targets = targets.FindByFileName(cxEnv.Path.Combine("*", "build.gradle"));
 
 
 

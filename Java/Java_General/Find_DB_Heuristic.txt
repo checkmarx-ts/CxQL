@@ -1,0 +1,5 @@
+result = base.Find_DB_Heuristic();
+
+CxList methods = Find_Methods();
+
+result -= methods.FindByShortNames(new List<String> {"getWorkflowId" , "save", "findFirstByTradingDateAndTemplateName", "convertUtilDateToString"} );

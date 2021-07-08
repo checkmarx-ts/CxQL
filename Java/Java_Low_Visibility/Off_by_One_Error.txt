@@ -44,3 +44,8 @@ foreach(CxList res in result) {
 	}
 
 }
+
+// remove arrays that is calling the size method.
+CxList sizeMethodInvocation = result.GetMembersOfTarget().FindByType(typeof(MethodInvokeExpr)).FindByShortName("size");
+CxList arraysCallingSizeMethod = sizeMethodInvocation.GetTargetOfMembers();
+result -= arraysCallingSizeMethod;

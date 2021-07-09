@@ -60,7 +60,7 @@ if (jsEnabledTrue.Count > 0 || allowFileAccessEnabled.Count > 0)
     CxList strAddSanitizers = All.NewCxList();
     
     CxList stringsWithQuestionMarks = Find_Strings().FindByShortNames(new List<string> {"*?*", "*=*", "*&*"});
-    stringsWithQuestionMarks.Add(unknownRef.FindByAbstractValues(stringsWithQuestionMarks) )
+    stringsWithQuestionMarks.Add(unknownRef.FindByAbstractValues(stringsWithQuestionMarks) );
     santitizerStrs.Add(stringsWithQuestionMarks);
     
     // string concatenation with binary operator Add "+"
@@ -124,7 +124,7 @@ if (jsEnabledTrue.Count > 0 || allowFileAccessEnabled.Count > 0)
 	CxList markerStmtCol = ifBlocks.FindByFathers(marker);
 
 	CxList sanitizer = loadUrl.GetByAncs(markerStmtCol);
-    sanitizer.Add(strAddSanitizers);
+    sanitizer.Add(All.GetByAncs(strAddSanitizers));
 
 	CxList inputs = Find_Inputs();
 	result = loadUrl.InfluencedByAndNotSanitized(inputs, sanitizer);

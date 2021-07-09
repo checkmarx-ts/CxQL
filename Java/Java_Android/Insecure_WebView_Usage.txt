@@ -58,7 +58,11 @@ if (jsEnabledTrue.Count > 0 || allowFileAccessEnabled.Count > 0)
 
     // Modified on 7/7/2021
     CxList strAddSanitizers = All.NewCxList();
-
+    
+    CxList stringsWithQuestionMarks = Find_Strings().FindByShortNames(new List<string> {"*?*", "*=*", "*&*"});
+    stringsWithQuestionMarks.Add(unknownRef.FindByAbstractValues(stringsWithQuestionMarks) )
+    santitizerStrs.Add(stringsWithQuestionMarks);
+    
     // string concatenation with binary operator Add "+"
     CxList plus = base.Find_BinaryExpr().GetByBinaryOperator(BinaryOperator.Add);
 

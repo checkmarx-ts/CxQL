@@ -1,0 +1,18 @@
+//This query intends to find permissions declared in the android manifest that are not used in the project
+//Find permissions declared in the AndroidManifest.xml
+CxList AndroidManifest = All.FindByFileName("*AndroidManifest.xml");
+CxList permissions = AndroidManifest.FindByType(typeof(StringLiteral)).FindByShortName("android.permission.*");
+permissions -= permissions.FindByShortName("android.permission.INTERNET");
+
+//Find permissions used in the project 
+CxList permissionsUsed = Find_MemberAccesses().FindByName("Manifest.permission").GetFathers();
+
+//If the permissions declared are not used they're added to the results
+foreach(CxList permission in permissions){
+	string permissionString = permission.GetName();
+	string[] words = permissionString.Split('.');
+	string word = words[words.Length - 1];
+	if (permissionsUsed.FindByShortName(word).Count == 0){
+		result.Add(permission);
+	}
+}

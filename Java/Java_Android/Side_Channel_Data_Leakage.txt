@@ -149,6 +149,11 @@ foreach (CxList elem in constInfluencedByInputAux.GetCxListByPath()){
 // find all variables that are influencing an output
 CxList variableRefPath = outputs.InfluencedByAndNotSanitized(variableRef, sanitize);
 
-result = variableRefPath;
+foreach (CxList res in variableRefPath.GetCxListByPath()) {
+	CxList paramOfSink = All.GetParameters(res.GetStartAndEndNodes(CxList.GetStartEndNodesType.EndNodesOnly));
+	if ((paramOfSink * variableRef).Count > 0) {
+		result.Add(res);
+	}
+}
 result.Add(constInfluencedByInput);
 result = result.ReduceFlow(CxList.ReduceFlowType.ReduceSmallFlow);

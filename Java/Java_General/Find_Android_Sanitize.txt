@@ -1,0 +1,9 @@
+result = base.Find_Android_Sanitize();
+
+CxList methods = Find_Methods();
+CxList sqlitedb = methods.FindByMemberAccess("SqLiteDataBase.*");
+
+CxList db = sqlitedb.FindByMemberAccess("SqLiteDataBase.update*"); 
+db.Add(sqlitedb.FindByMemberAccess("SqLiteDataBase.replace*"));
+
+result.Add(All.GetParameters(db));

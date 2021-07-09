@@ -26,4 +26,5 @@ Customized queries repo.
 21. Java_Android/Insecure_WebView_Usage
 22. Java_Heuristic/Heuristic_Parameter_Tampering -> Find_DB_Heuristic
 23. Java_Android/Use_of_WebView_AddJavascriptInterface
-24. Java Android/Client_Side_Injection -> Find_Android_Sanitize
+24. Java_Android/Client_Side_Injection -> Find_Android_Sanitize
+25. Java_Android/Failure_to_Implement_Least_Privilege

@@ -28,3 +28,4 @@ Customized queries repo.
 23. Java_Android/Use_of_WebView_AddJavascriptInterface
 24. Java_Android/Client_Side_Injection -> Find_Android_Sanitize
 25. Java_Android/Failure_to_Implement_Least_Privilege
+26. Java_Android/Insufficient_Sensitive_Transport_Layer

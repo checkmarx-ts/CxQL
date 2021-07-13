@@ -1,0 +1,16 @@
+result = base.Insufficient_Sensitive_Transport_Layer();
+
+// The block below finds access to the network over HTTP and not HTTPS
+CxList pureHTTP = Find_Pure_http();
+pureHTTP.Add(All.FindByType("HttpURLConnection"));
+CxList write = Find_Write();
+CxList writeToLocal = write - Find_Cloud_Storage_Out();	
+CxList writeToLocalInfluencedByHttp = writeToLocal * writeToLocal.DataInfluencedBy(pureHTTP);
+
+// remove data flows that the output is write to local
+foreach (CxList res in result.GetCxListByPath()) {
+	CxList endNodes = res.GetStartAndEndNodes(CxList.GetStartEndNodesType.EndNodesOnly);
+	if ((writeToLocalInfluencedByHttp * endNodes).Count > 0) {
+		result -= res;
+	}
+}

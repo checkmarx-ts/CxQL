@@ -1,0 +1,2 @@
+result = base.Find_Remote_Requests_Sanitize();
+result.Add(Find_URL_Query_String_Creating_URI());

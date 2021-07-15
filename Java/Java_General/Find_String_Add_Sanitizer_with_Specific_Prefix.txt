@@ -1,0 +1,151 @@
+/*
+ * This is a unitility query to find sanitizers that is used in string concatenation 
+ * to form the query string (part of a URL) with some specific prefix
+ *
+ * a prefix string could be a "https://", "file://", or " ?key_1=value_1&key_2="
+ *
+ * String concatenation cases
+ * 1) binary operator "+", E.g. "http://www.someone.com?" + "key=" + param;
+ * 2) String concat method, E.g. "http://www.some.com?".concat(queryString)
+ * 3) string format, E.g.String.format("%s ?key=%s", u, param);
+ * 4) StringBuilder or StringBuffer append method, E.g.StringBuilder.append("?").append("key=").append(param);
+*/
+
+try{
+	if(param.Length == 1 ){
+        CxList prefixes = param[0] as CxList;
+
+        CxList methods = Find_Methods();
+        CxList unknownRefs = Find_UnknownReference();
+        CxList objectCreate = Find_ObjectCreations();
+
+	    CxList strings = Find_Strings();
+	    strings.Add(All.FindByType("String"));
+
+        // string concatenation with binary operator Add "+"
+        CxList plus = base.Find_BinaryExpr().GetByBinaryOperator(BinaryOperator.Add);
+        plus = strings.FindByFathers(plus);
+        plus = plus.GetFathers();
+        plus = plus.FindByType(typeof(BinaryExpr));
+
+        CxList stringIdentifyUrlQuery = prefixes;
+        stringIdentifyUrlQuery.Add(unknownRefs.FindAllReferences(stringIdentifyUrlQuery.GetAssignee().FindByType("String")));
+        
+
+        CxList strAddSanitizers = All.NewCxList();
+
+        foreach (CxList p in plus) {
+            try {
+                BinaryExpr binaryExpr = p.TryGetCSharpGraph<BinaryExpr>();
+                if (binaryExpr != null && binaryExpr.Right != null && binaryExpr.Left != null) {
+                    Expression right = binaryExpr.Right;
+                    CxList cxRight = All.FindById(right.NodeId);
+                    Expression left = binaryExpr.Left;
+                    // this is for cases like string1+string2+string3. 
+                    while (left is BinaryExpr) {
+                        if (left != null && ((BinaryExpr) left).Right != null) {
+                            Expression leftRight = ((BinaryExpr) left).Right;
+                            CxList cxLeftRight = All.FindById(leftRight.NodeId);
+                            if ((stringIdentifyUrlQuery * cxLeftRight).Count > 0) {
+                                strAddSanitizers.Add(cxRight);
+                                break;
+                            }
+                        }
+                        left = ((BinaryExpr) left).Left;
+                    }
+
+                    CxList cxLeft = All.FindById(left.NodeId);
+
+                    if ((stringIdentifyUrlQuery * cxLeft).Count > 0) {
+                        strAddSanitizers.Add(cxRight);
+                    }
+                }
+            } catch(Exception ex) {
+                cxLog.WriteDebugMessage(ex);
+            }
+        }
+
+        CxList methodsWithParameterIdentifyUrlQuery = methods.FindByParameters(stringIdentifyUrlQuery);
+        
+        // string.concat
+        CxList concatTargets = All.NewCxList();
+        CxList strConcatMethod = methodsWithParameterIdentifyUrlQuery.FindByShortName("concat");
+        concatTargets.Add(stringIdentifyUrlQuery);
+        concatTargets.Add(strConcatMethod);
+
+        CxList tempMembers = concatTargets.GetMembersOfTarget();
+
+        CxList queryStringFromConcat = All.NewCxList();
+        while (tempMembers.Count > 0) {
+            CxList queryStrParam = unknownRefs.GetParameters(tempMembers);
+            queryStringFromConcat.Add(queryStrParam);
+            tempMembers = tempMembers.GetMembersOfTarget();
+        }
+
+        // string format
+        CxList strFormatMethod = methodsWithParameterIdentifyUrlQuery.FindByShortName("format");
+
+        CxList strFormatParameters = All.GetParameters(strFormatMethod);
+        strFormatParameters -= All.GetParameters(strFormatMethod, 0);
+
+        foreach (CxList format in strFormatMethod) {
+            CxList firstParam = Find_Strings().GetParameters(format, 0);
+            StringLiteral strLiteral = firstParam.TryGetCSharpGraph<StringLiteral>();
+            string str = strLiteral.Text;
+            // remove parameters before the first ?
+            string subStringBeforeQuestionMark = str.Split('?')[0];
+            int numberOfPlaceHolder = Regex.Matches(subStringBeforeQuestionMark, "%s").Count;
+            while (numberOfPlaceHolder > 0) {
+                int positionNumber = numberOfPlaceHolder;
+                CxList parameterForFormat = All.GetParameters(format, positionNumber);
+                strFormatParameters -= parameterForFormat;
+                numberOfPlaceHolder -= 1;
+            }
+        }
+
+
+        // StringBuilder.append  StringBuffer.append
+        CxList stringBuilderObjectCreate = objectCreate.FindByShortNames(new List<string> {"StringBuilder", "StringBuffer"});
+        CxList objectDeclarations = stringBuilderObjectCreate.FindByParameters(stringIdentifyUrlQuery).GetAssignee();
+        CxList stringBuilderBufferWithQuestionMark = unknownRefs.FindAllReferences(objectDeclarations);
+        CxList suspectAppendMethod = All.NewCxList();
+        suspectAppendMethod.Add(methods.FindByShortName("append").GetMembersWithTargets(stringBuilderBufferWithQuestionMark, 100));
+        CxList allStringBuilderRefs = unknownRefs.FindAllReferences(stringBuilderObjectCreate.GetAssignee());
+        CxList stringBuilderBufferWithoutQuestionMark = allStringBuilderRefs - stringBuilderBufferWithQuestionMark;
+        CxList appendMembersOfStringBuilder = methods.FindByShortName("append").GetMembersWithTargets(stringBuilderBufferWithoutQuestionMark, 100);
+        CxList appendMethodWithQuestionMark = methodsWithParameterIdentifyUrlQuery * appendMembersOfStringBuilder;
+        suspectAppendMethod.Add(methods.FindByShortName("append").GetMembersWithTargets(appendMethodWithQuestionMark, 100));
+        CxList stingBufferRefs = appendMethodWithQuestionMark.GetTargetOfMembers();
+
+        CxList paramOfAppendWithQuestionMark = All.NewCxList();
+        foreach (CxList stringBufferRef in stingBufferRefs) {
+            CSharpGraph g = stringBufferRef.TryGetCSharpGraph<CSharpGraph>();
+            int stringBufferRefId = g.NodeId;
+
+            CxList sbRefs = unknownRefs.FindAllReferences(stringBufferRef);
+            foreach (CxList sbRef in sbRefs) {
+                CSharpGraph h = sbRef.TryGetCSharpGraph<CSharpGraph>();
+                int refId = h.NodeId;
+                if (refId > stringBufferRefId) {
+                    CxList appendMethodAfterQuestionMark = sbRef.GetMembersOfTarget().FindByShortName("append");
+                    suspectAppendMethod.Add(appendMethodAfterQuestionMark);
+                }
+            }
+        }
+
+        CxList paramOfAppend = unknownRefs.GetParameters(suspectAppendMethod);
+
+        result.Add(strAddSanitizers);
+        
+        result.Add(queryStringFromConcat);
+        
+        result.Add(strFormatParameters);
+        
+        result.Add(paramOfAppend);
+	
+    } else {
+		result = All.NewCxList();
+	}
+} catch(Exception e){
+	cxLog.WriteDebugMessage(e);
+}

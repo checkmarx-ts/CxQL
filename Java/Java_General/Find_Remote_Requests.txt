@@ -18,3 +18,13 @@ CxList springRestTemplateFirstParam = All.GetParameters(All.FindByMemberAccesses
 result -= Find_XSRF_Requests();
 
 result.Add(springRestTemplateFirstParam);
+
+// Runtime.exec should be influenced by curl command
+CxList methods = Find_Methods();
+CxList runtimeExec = methods.FindByMemberAccess("Runtime.exec");
+result -= runtimeExec;
+CxList curl = Find_Strings().FindByShortName("*curl*", false);
+CxList execInfluencedByCurl = runtimeExec * curl.InfluencingOn(runtimeExec);
+result.Add(execInfluencedByCurl);
+
+result.Add(Find_SSRF_Execute());

@@ -1,6 +1,6 @@
 /*
 * Find query string when creating an URI
-* 
+*
 * query string parameter from URI constructor, https://docs.oracle.com/javase/7/docs/api/java/net/URI.html
 *
 * set query or URL parameter methods
@@ -15,13 +15,17 @@ CxList methods = Find_Methods();
 CxList unknownRefs = Find_UnknownReference();
 CxList stringReference = unknownRefs.FindByType("String");
 CxList objectCreate = Find_ObjectCreations();
+CxList stringLiterals = Find_Strings();
+CxList declarators = Find_Declarators();
+CxList customAttribute = Find_CustomAttribute();
+CxList propertiesFile = Find_Properties_Files();
 
 CxList uriCreate = objectCreate.FindByShortName("URI");
 CxList uriQueryParam = All.NewCxList();
 uriQueryParam.Add(stringReference.GetParameters(uriCreate, 5));
 uriQueryParam.Add(stringReference.GetParameters(uriCreate, 3));
 
-CxList uriQueryMethods = All.FindByMemberAccesses(new string[]{	
+CxList uriQueryMethods = All.FindByMemberAccesses(new string[]{
 	// https://www.javadoc.io/doc/org.apache.httpcomponents/httpclient/4.2.4/org/apache/http/client/utils/URIBuilder.html
 	"URIBuilder.setParameter",
 	"URIBuilder.setQuery",
@@ -29,199 +33,88 @@ CxList uriQueryMethods = All.FindByMemberAccesses(new string[]{
 	"UriBuilder.queryParam",
 	"UriBuilder.replaceQuery",
 	"UriBuilder.replaceQueryParam",
-	// 
+	//
 	"Builder.addQueryParameter",
 	});
 
-// string concatenation with binary operator Add "+"
-CxList plus = base.Find_BinaryExpr().GetByBinaryOperator(BinaryOperator.Add);
+stringLiterals.Add(All.FindAllReferences(Find_Strings().GetAssignee()));
 
-CxList strings = Find_Strings(); // We only want the + that operate on strings
 
-strings.Add(All.FindByType("String"));
+// 1. find possible url string
+CxList possibleUrlString = All.NewCxList();
+possibleUrlString.Add(stringLiterals.FindByShortNames(new List<string> {"*?*", "*=*", "*&*"}));
+possibleUrlString.Add(stringLiterals.FindByRegex(@"https?://\w+(\.\w+)*(:\d+)?/"));
 
-plus = strings.FindByFathers(plus);
+// 2. find references of url string declarator (variable or final field)
+CxList urlDeclarations = possibleUrlString.GetAssignee();
+CxList urlReferences = All.NewCxList();
+urlReferences.Add(possibleUrlString);
+int i = 5;
+while ( i-- > 0) {
+	CxList binaryAddString = urlReferences.GetAncOfType(typeof(BinaryExpr));
+	CxList variableDeclStatements = binaryAddString.GetAncOfType(typeof(VariableDeclStmt));
+	urlDeclarations.Add(declarators.GetByAncs(variableDeclStatements));
+	urlReferences.Add(All.FindAllReferences(urlDeclarations));
+}
 
-plus = plus.GetFathers();
+// 3. find references of url string field
+// org.springframework.beans.factory.annotation.Value;
+CxList annotations = customAttribute.FindByCustomAttribute("Value");
+CxList goodAnnotations = All.NewCxList();
 
-plus = plus.FindByType(typeof(BinaryExpr));
-
-CxList stringsWithQuestionMarks = Find_Strings().FindByShortNames(new List<string> {"*?*", "*=*", "*&*"});
-CxList strVariable = unknownRefs.FindAllReferences(stringsWithQuestionMarks.GetAssignee().FindByType("String"));
-CxList methodWithQuestionMarkParam = methods.FindByParameters(stringsWithQuestionMarks);
-
-CxList strAddSanitizers = All.NewCxList();
-
-foreach (CxList p in plus) // for strings added with +
-
-{
-
-	try
-
-	{
-
-		BinaryExpr binaryExpr = p.TryGetCSharpGraph<BinaryExpr>();
-
-		if (binaryExpr != null && binaryExpr.Right != null && binaryExpr.Left != null)
-
-		{
-
-			Expression right = binaryExpr.Right;
-
-			CxList cxRight = All.FindById(right.NodeId);
-
-			Expression left = binaryExpr.Left;
-
-			while (left is BinaryExpr) // this is for cases like string1+string2+string3. There're a bit hard to deal with - and this is what the while loop dose
-
-			{
-
-				if (left != null && ((BinaryExpr) left).Right != null)
-
-				{
-
-					Expression leftRight = ((BinaryExpr) left).Right;
-
-					CxList cxLeftRight = All.FindById(leftRight.NodeId);
-
-					if ((stringsWithQuestionMarks * cxLeftRight).Count > 0)
-
-					{
-
-						strAddSanitizers.Add(cxRight);
-
-						break;
-
-					}
-
-				}
-
-				left = ((BinaryExpr) left).Left;
-
-			}
-
-			CxList cxLeft = All.FindById(left.NodeId);
-
-		
-
-			if ((stringsWithQuestionMarks * cxLeft).Count > 0)
-
-			{
-
-				strAddSanitizers.Add(cxRight);
-
-			}
-
+foreach (CxList annotation in annotations) {
+	CxList annotationString = stringLiterals.GetByAncs(annotation);
+	StringLiteral text = annotationString.TryGetCSharpGraph<StringLiteral>();
+	String shortName = text.ShortName;
+	String annoStrValue = "";
+	if (shortName.Contains("${")) {
+	    goodAnnotations.Add(annotation);
+		// the string is a properties from properties file
+		/*
+		string pattern = @"\${(\w+(\.\w+)*)}";
+		foreach(Match m in new System.Text.RegularExpressions.Regex(pattern).Matches(shortName)){
+			shortName = m.Groups[1].Value;
+			break;
 		}
+		//cxLog.WriteDebugMessage("shortName: " + shortName);
+		String[] members = shortName.Split('.');
+		int arrayLength = members.Length;
+		// the property in a properties file
+		CxList propertiesMember = propertiesFile.FindByMemberAccess("*" + shortName);
 
-	}
-
-	catch(Exception ex)
-
-	{
-
-		cxLog.WriteDebugMessage(ex);
-
-	}
-
-}
-
-
-// string.concat
-CxList concatTargets = All.NewCxList();
-
-CxList strConcatMethod = methodWithQuestionMarkParam.FindByShortName("concat");
-concatTargets.Add(stringsWithQuestionMarks);
-concatTargets.Add(strVariable);
-concatTargets.Add(strConcatMethod);
-
-CxList tempMembers = concatTargets.GetMembersOfTarget();
-
-CxList queryStringFromConcat = All.NewCxList();
-while (tempMembers.Count > 0) {
-	CxList queryStrParam = unknownRefs.GetParameters(tempMembers);
-	queryStringFromConcat.Add(queryStrParam);
-	tempMembers = tempMembers.GetMembersOfTarget();
-}
-
-// string format
-CxList strFormatMethod = methodWithQuestionMarkParam.FindByShortName("format");
-
-CxList strFormatParameters = All.GetParameters(strFormatMethod);
-strFormatParameters -= All.GetParameters(strFormatMethod, 0);
-
-foreach (CxList format in strFormatMethod) {
-	CxList firtParam = Find_Strings().GetParameters(format, 0);
-	StringLiteral strLiteral = firtParam.TryGetCSharpGraph<StringLiteral>();
-	string str = strLiteral.Text;
-	string subStringBeforeQuestionMark = str.Split('?')[0];
-	int numberOfPlaceHolder = Regex.Matches(subStringBeforeQuestionMark, "%s").Count;
-	while (numberOfPlaceHolder > 0) {
-		int positionNumber = numberOfPlaceHolder;
-		CxList parameterForFormat = All.GetParameters(format, positionNumber);
-		strFormatParameters -= parameterForFormat;
-		numberOfPlaceHolder -= 1;
-	}
-}
-
-
-// StringBuilder.append  StringBuffer.append
-CxList stingWithQuestionMark = All.NewCxList();
-stingWithQuestionMark.Add(stringsWithQuestionMarks);
-stingWithQuestionMark.Add(strVariable);
-
-
-CxList stringBuilderObjectCreate = objectCreate.FindByShortNames(new List<string> {"StringBuilder", "StringBuffer"});
-
-CxList stringBuilderBufferWithQuestionMark = unknownRefs.FindAllReferences(stringBuilderObjectCreate.FindByParameters(stingWithQuestionMark).GetAssignee());
-
-CxList suspectAppendMethod = All.NewCxList();
-
-suspectAppendMethod.Add(methods.FindByShortName("append").GetMembersWithTargets(stringBuilderBufferWithQuestionMark, 100));
-
-
-
-CxList allStringBuilderRefs = unknownRefs.FindAllReferences(stringBuilderObjectCreate.GetAssignee());
-
-CxList stringBuilderBufferWithoutQuestionMark = allStringBuilderRefs - stringBuilderBufferWithQuestionMark;
-
-CxList appendMembersOfStringBuilder = methods.FindByShortName("append").GetMembersWithTargets(stringBuilderBufferWithoutQuestionMark, 100);
-
-CxList appendMethodWithQuestionMark = methodWithQuestionMarkParam * appendMembersOfStringBuilder;
-
-suspectAppendMethod.Add(methods.FindByShortName("append").GetMembersWithTargets(appendMethodWithQuestionMark, 100));
-
-
-CxList stingBufferRefs = appendMethodWithQuestionMark.GetTargetOfMembers();
-
-CxList paramOfAppendWithQuestionMark = All.NewCxList();
-foreach (CxList stringBufferRef in stingBufferRefs) {
-	CSharpGraph g = stringBufferRef.TryGetCSharpGraph<CSharpGraph>();
-	int stringBufferRefId = g.NodeId;
-	
-	CxList sbRefs = unknownRefs.FindAllReferences(stringBufferRef);
-	foreach (CxList sbRef in sbRefs) {
-		CSharpGraph h = sbRef.TryGetCSharpGraph<CSharpGraph>();
-		int refId = h.NodeId;
-		if (refId > stringBufferRefId) {
-			CxList appendMethodAfterQuestionMark = sbRef.GetMembersOfTarget().FindByShortName("append");
-			suspectAppendMethod.Add(appendMethodAfterQuestionMark);
+		if (propertiesMember.Count > 0) {
+			CxList propertyValue = propertiesMember.GetAssigner();
+			StringLiteral propertyValueStr = propertyValue.TryGetCSharpGraph<StringLiteral>();
+			annoStrValue = propertyValueStr.ShortName;
 		}
+		*/
+	} else {
+		// the string is a place holder value
+		annoStrValue = shortName;
 	}
+	//cxLog.WriteDebugMessage("annoStrValue: " + annoStrValue);
+
+	// if annoStrValue has fixed FQDN (hostname and port), keep it
+	MatchCollection matchCol = Regex.Matches(annoStrValue, @"https?://\w+(\.\w+)*(:\d+)?/");
+	if (matchCol.Count > 0) {
+		goodAnnotations.Add(annotation);
+	}
+
+	// if annoStrValue has ? = & characters, keep it
+	MatchCollection matchColl = Regex.Matches(annoStrValue, @"[\?=&]");
+	if (matchColl.Count > 0) {
+		goodAnnotations.Add(annotation);
+	}
+
 }
 
-CxList paramOfAppend = unknownRefs.GetParameters(suspectAppendMethod);
+CxList fieldOrParamDecls = goodAnnotations.GetFathers();
+CxList fieldOrParamReferences = All.FindAllReferences(fieldOrParamDecls);
 
-
+CxList possibleUrlStringReferences = All.NewCxList();
+possibleUrlStringReferences.Add(urlReferences);
+possibleUrlStringReferences.Add(fieldOrParamReferences);
 
 result = uriQueryParam;
-
-result.Add(uriQueryMethods);
-
-result.Add(strAddSanitizers);
-
-result.Add(queryStringFromConcat);
-
-result.Add(strFormatParameters);
-
-result.Add(paramOfAppend);
+result.Add(All.GetParameters(uriQueryMethods));
+result.Add(Find_String_Add_Sanitizer_with_Specific_Prefix(possibleUrlStringReferences));

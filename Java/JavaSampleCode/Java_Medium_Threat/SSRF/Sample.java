@@ -1,5 +1,7 @@
 class Sample {
 	
+	private String gotoUrl;
+	
 	// Positive
 	public void test_creat_URI() {
 		String url = request.getParameter("url");
@@ -210,5 +212,17 @@ class Sample {
 			}
 		}
 	}
+	
+	// Negative
+	private HttpResponse invokeNewFaceReplaceImage(HttpServletRequest request){
+		String idNumber = request.getParameter("idNumber");
+		HttpClient httpClient = someService.getNewFaceCheckClient();
+		MultipartEntity entity = new MultipartEntity();
+		entity.addPart("id", new StringBody(idNumber));
+		HttpPost post = new httpPost(NEWFACE_REPLACE_IMAGE_URL);
+		post.setEntity(entity);
+		return httpClient.execute(post);
+	}
+	
 
 }

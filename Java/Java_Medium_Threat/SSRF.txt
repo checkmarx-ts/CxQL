@@ -15,7 +15,7 @@ foreach (CxList res in result.GetCxListByPath()) {
 
 // input -> httpAction -> execute
 CxList httpAction = Find_SSRF_Http_Action();
-inputs = inputs.InfluencingOn(httpAction);
-result.Add(executeMethods.InfluencedByAndNotSanitized(inputs, sanitizers));
+CxList inputsToHttpAction = inputs.InfluencingOnAndNotSanitized(httpAction, sanitizers);
+result.Add(executeMethods.InfluencedBy(inputsToHttpAction));
 
 result = result.ReduceFlowByPragma();

@@ -105,7 +105,7 @@ outputs.Add(exceptionsCtorsWithSuper);
 //outputs.Add(Find_FileSystem_Write()); //shouldn't be considered as sinks for Privacy_Violation
 outputs -= All.FindByMemberAccess("EditText.setText");
 outputs -= unkrefs.GetByAncs(parameters.GetParameters(methods.FindByShortNames(new List<string>{"sendBroadcast", "startActivity"})));
-
+outputs -= Find_Console_Outputs();
 
 // Define sanitize
 CxList sanitize = Find_DB(); // in some languages is called Find_DB, Find_DB_In, Find_DB_Input

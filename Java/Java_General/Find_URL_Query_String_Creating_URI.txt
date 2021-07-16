@@ -19,6 +19,7 @@ CxList stringLiterals = Find_Strings();
 CxList declarators = Find_Declarators();
 CxList customAttribute = Find_CustomAttribute();
 CxList propertiesFile = Find_Properties_Files();
+CxList paramDecls = Find_ParamDecl();
 
 CxList uriCreate = objectCreate.FindByShortName("URI");
 CxList uriQueryParam = All.NewCxList();
@@ -68,13 +69,13 @@ foreach (CxList annotation in annotations) {
 	String shortName = text.ShortName;
 	String annoStrValue = "";
 	if (shortName.Contains("${")) {
-	    goodAnnotations.Add(annotation);
+		goodAnnotations.Add(annotation);
 		// the string is a properties from properties file
 		/*
 		string pattern = @"\${(\w+(\.\w+)*)}";
 		foreach(Match m in new System.Text.RegularExpressions.Regex(pattern).Matches(shortName)){
-			shortName = m.Groups[1].Value;
-			break;
+		shortName = m.Groups[1].Value;
+		break;
 		}
 		//cxLog.WriteDebugMessage("shortName: " + shortName);
 		String[] members = shortName.Split('.');
@@ -83,9 +84,9 @@ foreach (CxList annotation in annotations) {
 		CxList propertiesMember = propertiesFile.FindByMemberAccess("*" + shortName);
 
 		if (propertiesMember.Count > 0) {
-			CxList propertyValue = propertiesMember.GetAssigner();
-			StringLiteral propertyValueStr = propertyValue.TryGetCSharpGraph<StringLiteral>();
-			annoStrValue = propertyValueStr.ShortName;
+		CxList propertyValue = propertiesMember.GetAssigner();
+		StringLiteral propertyValueStr = propertyValue.TryGetCSharpGraph<StringLiteral>();
+		annoStrValue = propertyValueStr.ShortName;
 		}
 		*/
 	} else {
@@ -110,10 +111,13 @@ foreach (CxList annotation in annotations) {
 
 CxList fieldOrParamDecls = goodAnnotations.GetFathers();
 CxList fieldOrParamReferences = All.FindAllReferences(fieldOrParamDecls);
+CxList paramDeclaration = paramDecls * paramDecls.InfluencedBy(fieldOrParamReferences);
+CxList paramReferences = All.FindAllReferences(paramDeclaration);
 
 CxList possibleUrlStringReferences = All.NewCxList();
 possibleUrlStringReferences.Add(urlReferences);
 possibleUrlStringReferences.Add(fieldOrParamReferences);
+possibleUrlStringReferences.Add(paramReferences);
 
 result = uriQueryParam;
 result.Add(All.GetParameters(uriQueryMethods));

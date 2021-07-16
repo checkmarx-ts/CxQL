@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-
+// Negative
 @RestController
 public class CRLFController {
 	
@@ -31,6 +31,16 @@ public class CRLFController {
 	private String groupUrl;
 	
 	private final String exUrl = "https://www.something.net/";
+
+	private String httpClientGet(String destAddress) {
+		CloseableHttpClient httpClient = httpClientBuilder.build();
+		StringBuilder builder = new StringBuilder();
+		String key = request.getParameter("key");
+		builder.append(key);
+		HttpGet httpGet = new HttpGet(destAddress + "?" + builder.toString());
+		HtpResonse httpResponse = httpClient.execute(httpGet);
+		return result;
+	}
 
     @RequestMapping("/crlf")
     public String crlf(HttpServletRequest request, HttpServletResponse response){
@@ -59,8 +69,12 @@ public class CRLFController {
 		
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();
-        return responseCode;
+        
+		String result = httpClientGet(groupUrl + url);
+		
+		return responseCode;
     }
+	
     @RequestMapping (value = "/download", method = RequestMethod.POST)
     public ResponseEntity<byte[]> downloadPolicyTar(@RequestBody Map<String, Object> requestInfo,
                            HttpServletRequest request){

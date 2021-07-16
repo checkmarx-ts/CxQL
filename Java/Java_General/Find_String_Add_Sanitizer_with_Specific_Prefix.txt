@@ -19,50 +19,15 @@ try{
         CxList unknownRefs = Find_UnknownReference();
         CxList objectCreate = Find_ObjectCreations();
 
-	    CxList strings = Find_Strings();
-	    strings.Add(All.FindByType("String"));
-
-        // string concatenation with binary operator Add "+"
-        CxList plus = base.Find_BinaryExpr().GetByBinaryOperator(BinaryOperator.Add);
-        plus = strings.FindByFathers(plus);
-        plus = plus.GetFathers();
-        plus = plus.FindByType(typeof(BinaryExpr));
-
         CxList stringIdentifyUrlQuery = prefixes;
-        stringIdentifyUrlQuery.Add(unknownRefs.FindAllReferences(stringIdentifyUrlQuery.GetAssignee().FindByType("String")));
-        
 
         CxList strAddSanitizers = All.NewCxList();
 
-        foreach (CxList p in plus) {
-            try {
-                BinaryExpr binaryExpr = p.TryGetCSharpGraph<BinaryExpr>();
-                if (binaryExpr != null && binaryExpr.Right != null && binaryExpr.Left != null) {
-                    Expression right = binaryExpr.Right;
-                    CxList cxRight = All.FindById(right.NodeId);
-                    Expression left = binaryExpr.Left;
-                    // this is for cases like string1+string2+string3. 
-                    while (left is BinaryExpr) {
-                        if (left != null && ((BinaryExpr) left).Right != null) {
-                            Expression leftRight = ((BinaryExpr) left).Right;
-                            CxList cxLeftRight = All.FindById(leftRight.NodeId);
-                            if ((stringIdentifyUrlQuery * cxLeftRight).Count > 0) {
-                                strAddSanitizers.Add(cxRight);
-                                break;
-                            }
-                        }
-                        left = ((BinaryExpr) left).Left;
-                    }
-
-                    CxList cxLeft = All.FindById(left.NodeId);
-
-                    if ((stringIdentifyUrlQuery * cxLeft).Count > 0) {
-                        strAddSanitizers.Add(cxRight);
-                    }
-                }
-            } catch(Exception ex) {
-                cxLog.WriteDebugMessage(ex);
-            }
+        CxList stringPlus = prefixes.GetFathers().FindByType(typeof(BinaryExpr)).GetByBinaryOperator(BinaryOperator.Add);
+        while (stringPlus.Count > 0) {
+        	CxList rightMember = stringPlus.CxSelectDomProperty<BinaryExpr>(x => x.Right);
+        	strAddSanitizers.Add(All.GetByAncs(rightMember));
+        	stringPlus = stringPlus.GetFathers().FindByType(typeof(BinaryExpr)).GetByBinaryOperator(BinaryOperator.Add);
         }
 
         CxList methodsWithParameterIdentifyUrlQuery = methods.FindByParameters(stringIdentifyUrlQuery);

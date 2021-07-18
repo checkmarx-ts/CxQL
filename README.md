@@ -29,3 +29,4 @@ Customized queries repo.
 24. Java_Android/Client_Side_Injection -> Find_Android_Sanitize
 25. Java_Android/Failure_to_Implement_Least_Privilege
 26. Java_Android/Insufficient_Sensitive_Transport_Layer
+27. Python/Python_Low_Visibility/Improper_Resource_Shutdown_or_Release

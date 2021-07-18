@@ -1,0 +1,39 @@
+/* -*- mode: csharp; -*- */
+/*
+ *  Description:
+ *  Prevent false positives when resource acquired in a with statement
+ *
+ *  Depends On:
+ *  To Be Used With: Improper_Resource_Shutdown_or_Release
+ *
+ *  Limitations:
+ *  The opening of the with statement (everything up to the colon that
+ *  precedes the body of the with statement) must be on a single line.
+ */
+result = base.Improper_Resource_Shutdown_or_Release();
+
+/*
+ * Create a HashSet with an entry for each with statement found in the project's
+ * source code. Each entry consists of the file name and the line number separated
+ * by a colon.
+ */
+HashSet<string> withStmts = new HashSet<string>();
+CxList ws = All.FindByRegexExt(@"\bwith\s+.*:\s*$", "*.py", false, RegexOptions.Multiline);
+foreach (CxList w in ws) {
+	DOMProperties props = w.GetDOMPropertiesOfFirst();
+	withStmts.Add(props.FileName + ":" + props.Line);
+}
+
+/*
+ * For each resource acquisition, if the combination of its file name and line
+ * number coincides with a with statement, do not report it as a resource leak.
+ */
+CxList falsePositives = All.NewCxList();
+foreach (CxList r in result) {
+	DOMProperties props = r.GetDOMPropertiesOfFirst();
+	if (withStmts.Contains(props.FileName + ":" + props.Line)) {
+		falsePositives.Add(r);
+	}
+}
+
+result -= falsePositives;

@@ -2,6 +2,6 @@ result = base.Insecure_WebView_Usage();
 
 CxList stringsIdentifyUrlParameter = Find_Strings().FindByShortNames(new List<string> {"*?*", "*=*", "*&*"});
 
-CxList sanitizers = Find_String_Add_Sanitizer_with_Specific_Prefix(possibleUrlStringReferences);
+CxList sanitizers = Find_String_Add_Sanitizer_with_Specific_Prefix(stringsIdentifyUrlParameter);
 
-result = paths.SanitizeCxList(sanitizers);
+result = result.SanitizeCxList(sanitizers);

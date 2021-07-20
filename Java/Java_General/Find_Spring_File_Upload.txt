@@ -1,0 +1,12 @@
+result = base.Find_Spring_File_Upload();
+
+//  MultipartResolver implementation for use with Commons FileUpload
+CxList customAttributes = Find_CustomAttribute();
+CxList configurationAnnoation = customAttributes.FindByCustomAttribute("Configuration");
+CxList springConfigClassDecl = configurationAnnoation.GetFathers().FindByType(typeof(ClassDecl));
+CxList configClassMembers = All.GetByAncs(springConfigClassDecl);
+CxList multipartResolverSetMaxUploadSize =	configClassMembers.FindByMemberAccess("CommonsMultipartResolver.setMaxUploadSize");
+
+if (multipartResolverSetMaxUploadSize.Count > 0) {
+	result = All.NewCxList();
+}
